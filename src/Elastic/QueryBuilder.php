@@ -22,6 +22,13 @@ class QueryBuilder
         return $this;
     }
 
+    public function sort($sort)
+    {
+        $this->query['sort'][] = $sort;
+
+        return $this;
+    }
+
     public function build()
     {
         $build = [
@@ -72,7 +79,10 @@ class QueryBuilder
             $query['range'][$field]['lte'] = $end;
         }
 
-        $this->merge($query);
+        if ($query)
+        {
+            $this->merge($query);
+        }
 
         return $this;
     }

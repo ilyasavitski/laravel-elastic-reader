@@ -13,6 +13,8 @@ class SearchModel
     protected static $index;
     protected static $type;
 
+    protected $queryBuilder;
+
     public static function search(QueryBuilder $builder = null)
     {
         $elastic = app(Elastic::class);
