@@ -41,6 +41,11 @@ class QueryBuilder
             $build['body'] = $body;
         }
 
+        if ($sort = array_get($this->query, 'sort'))
+        {
+            $build['sort'] = $sort;
+        }
+
         return $build;
     }
 
