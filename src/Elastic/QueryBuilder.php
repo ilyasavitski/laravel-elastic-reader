@@ -24,7 +24,7 @@ class QueryBuilder
 
     public function sort($sort)
     {
-        $this->query['sort'][] = $sort;
+        $this->query['sort'] = $sort;
 
         return $this;
     }
@@ -46,11 +46,6 @@ class QueryBuilder
 
     protected function merge(array $query, $mode = 'filter')
     {
-        if (!array_key_exists('body.query.filter', $this->query))
-        {
-            $this->query['body']['query']['bool'][$mode] = [];
-        }
-
         $this->query['body']['query']['bool'][$mode][] = $query;
 
         return $this;
@@ -91,7 +86,7 @@ class QueryBuilder
     {
         $query = ['query_string' => ['default_field' => $field, "query" => '*' . $value . '*']];
 
-        $this->merge($query);
+        $this->merge($query, 'must');
 
         return $this;
     }
