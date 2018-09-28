@@ -20,5 +20,6 @@
     "psr-4": {
       "Merkeleon\\ElasticReader\\": "src/"
     }
-  }
+  },
+  "minimum-stability": "dev"
 }
