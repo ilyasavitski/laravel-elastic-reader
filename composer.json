@@ -1,5 +1,5 @@
 {
-  "name": "dancer-st/laravel-elastic-reader",
+  "name": "merkeleon/laravel-elastic-reader",
   "description": "Laravel Elastic Reader",
   "require": {
     "php": "^7.1.3",
