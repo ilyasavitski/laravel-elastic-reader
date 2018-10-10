@@ -23,8 +23,8 @@ class SearchModel
 
         $parameters = array_merge(
             [
-                'index' => self::$index,
-                'type'  => self::$type,
+                'index' => static::$index,
+                'type'  => static::$type,
             ],
             $builderParameters
         );
