@@ -78,4 +78,15 @@ class SearchModel
     {
         return $hit;
     }
+
+    public static function create($params)
+    {
+        $createParams = [
+            'index' => static::$index,
+            'type'  => static::$type,
+            'body' => $params
+        ];
+
+        return $response = app(Elastic::class)->index($createParams);
+    }
 }
