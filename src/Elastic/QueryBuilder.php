@@ -95,4 +95,15 @@ class QueryBuilder
 
         return $this;
     }
+
+    public function whereOr($params)
+    {
+        $query = [];
+        foreach ($params as $field => $value)
+        {
+            $query[] = ['term' => [$field => $value]];
+        }
+
+        $this->merge($query, 'should');
+    }
 }
