@@ -39,4 +39,9 @@ class Elastic
     {
         return $this->client->search($parameters);
     }
+
+    public function get(array $parameters)
+    {
+        return $this->client->get($parameters);
+    }
 }
