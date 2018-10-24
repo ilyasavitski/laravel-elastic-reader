@@ -59,7 +59,8 @@ class SearchModel
         $this->query()
              ->size(1);
 
-        return $this->get()->first();
+        return $this->get()
+                    ->first();
     }
 
     public function orderBy($orderField, $orderDirection)
@@ -149,7 +150,21 @@ class SearchModel
             'body'  => $params
         ];
 
-        return app(Elastic::class)->index($createParams);
+        $response = app(Elastic::class)->index($createParams);
+
+        if ($response['result'] != 'created')
+        {
+            throw new \Exception('Can not create Elastic Model ' . static::class);
+        }
+
+        $hit = app(Elastic::class)->get(
+            [
+                'index' => static::$index,
+                'type'  => static::$type,
+                'id'    => $response['_id']
+            ]);
+
+        return static::prepareHit($hit);
     }
 
     public static function prepareItems(array $items)
