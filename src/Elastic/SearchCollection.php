@@ -13,27 +13,46 @@ class SearchCollection extends Collection
     protected $maxScore;
     protected $shards;
 
-    public function __construct($elasticResponse = [], callable $callback = null)
+    public static function createFromElasticResponse($elasticResponse = [], callable $callbackHit = null, array $callbacks = null)
     {
-        if (!$callback)
+        if (!$callbackHit)
         {
-            $this->items = $elasticResponse['hits']['hits'];
+            $items = $elasticResponse['hits']['hits'];
         }
         else
         {
-            $this->items = array_map(
-                function ($item) use ($callback) {
-                    return $callback($item);
+            $items = array_map(
+                function ($item) use ($callbackHit) {
+                    return $callbackHit($item);
                 },
                 $elasticResponse['hits']['hits']
             );
         }
 
-        $this->took       = $elasticResponse['took'];
-        $this->isTimedOut = $elasticResponse['timed_out'];
-        $this->total      = $elasticResponse['hits']['total'];
-        $this->maxScore   = $elasticResponse['hits']['max_score'];
-        $this->shards     = $elasticResponse['_shards'];
+        if ($callbacks)
+        {
+            foreach ($callbacks as $callback)
+            {
+                if (is_callable($callback))
+                {
+                    $items = $callback($items);
+                }
+            }
+        }
+
+        return (new static($items))
+            ->setTook($elasticResponse['took'])
+            ->setTimedOut($elasticResponse['timed_out'])
+            ->setTotal($elasticResponse['hits']['total'])
+            ->setMaxScore($elasticResponse['hits']['max_score'])
+            ->setShards($elasticResponse['_shards']);
+    }
+
+    public function setTook(int $took)
+    {
+        $this->took = $took;
+
+        return $this;
     }
 
     /**
@@ -44,6 +63,14 @@ class SearchCollection extends Collection
         return $this->took;
     }
 
+    public function setTimedOut(bool $timeOut)
+    {
+        $this->isTimedOut = $timeOut;
+
+        return $this;
+    }
+
+
     /**
      * @return bool
      */
@@ -52,12 +79,28 @@ class SearchCollection extends Collection
         return $this->isTimedOut;
     }
 
+
+    public function setTotal(int $total)
+    {
+        $this->total = $total;
+
+        return $this;
+    }
+
     /**
      * @return int
      */
     public function getTotal()
     {
         return $this->total;
+    }
+
+
+    public function setMaxScore(int $maxScore = null)
+    {
+        $this->maxScore = $maxScore;
+
+        return $this;
     }
 
     /**
@@ -71,6 +114,14 @@ class SearchCollection extends Collection
     /**
      * @return array
      */
+
+    public function setShards(array $shards)
+    {
+        $this->shards = $shards;
+
+        return $this;
+    }
+
     public function getShards()
     {
         return $this->shards;

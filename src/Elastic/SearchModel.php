@@ -14,8 +14,9 @@ class SearchModel
     protected static $type;
 
     protected $queryBuilder;
+    protected $callbacks;
 
-    public static function search(QueryBuilder $builder = null)
+    public static function search(QueryBuilder $builder = null, array $callbacks = null)
     {
         $elastic = app(Elastic::class);
 
@@ -31,7 +32,7 @@ class SearchModel
 
         $elasticResponse = $elastic->search($parameters);
 
-        return new SearchCollection($elasticResponse, static::class . '::prepareHit');
+        return SearchCollection::createFromElasticResponse($elasticResponse, static::class . '::prepareHit', $callbacks);
     }
 
     public function query(QueryBuilder $queryBuilder = null)
@@ -48,6 +49,25 @@ class SearchModel
         return $this->queryBuilder;
     }
 
+    public function get()
+    {
+        return static::search($this->query(), $this->callbacks);
+    }
+
+    public function first()
+    {
+        $this->query()
+             ->size(1);
+
+        return $this->get()->first();
+    }
+
+    public function orderBy($orderField, $orderDirection)
+    {
+        $this->query()
+             ->sort($orderField . ':' . $orderDirection);
+    }
+
     public function paginate($perPage)
     {
         $page = Paginator::resolveCurrentPage();
@@ -58,12 +78,54 @@ class SearchModel
              ->from($offSet)
              ->size($perPage);
 
-        $results = static::search($this->query());
+        $results = $this->get();
 
         return $this->paginator($results, $results->getTotal(), $perPage, $page, [
             'path'     => Paginator::resolveCurrentPath(),
             'pageName' => 'page',
         ]);
+    }
+
+    public function chunkById($count, callable $callback)
+    {
+        $offset = 0;
+        do
+        {
+            $this->query()
+                 ->from($offset)
+                 ->size($count);
+
+            $results = $this->get();
+
+            $countResults = $results->count();
+
+            if ($countResults == 0)
+            {
+                break;
+            }
+
+            if ($callback($results) === false)
+            {
+                return false;
+            }
+
+            unset($results);
+
+            $offset += $count;
+
+        } while ($countResults == $count);
+
+        return true;
+    }
+
+    public function firstOrFail()
+    {
+        if ($first = $this->first())
+        {
+            return $first;
+        }
+
+        throw new \Exception('Model ' . static::class . 'not Found');
     }
 
     protected function paginator($items, $total, $perPage, $currentPage, $options)
@@ -84,9 +146,21 @@ class SearchModel
         $createParams = [
             'index' => static::$index,
             'type'  => static::$type,
-            'body' => $params
+            'body'  => $params
         ];
 
-        return $response = app(Elastic::class)->index($createParams);
+        return app(Elastic::class)->index($createParams);
+    }
+
+    public static function prepareItems(array $items)
+    {
+        return $items;
+    }
+
+    public function addCallback(callable $callback)
+    {
+        $this->callbacks[] = $callback;
+
+        return $this;
     }
 }
