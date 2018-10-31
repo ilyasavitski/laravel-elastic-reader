@@ -10,6 +10,8 @@ use Illuminate\Pagination\Paginator;
 
 class SearchModel
 {
+    public static $dateTimeFormat= 'd/M/Y:H:i:s O';
+
     protected static $index;
     protected static $type;
 
