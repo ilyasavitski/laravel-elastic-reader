@@ -32,8 +32,8 @@ class QueryBuilder
     public function build()
     {
         $build = [
-            'from' => array_get($this->query, 'from', 0),
-            'size' => array_get($this->query, 'size', 50)
+            'from' => (int)array_get($this->query, 'from', 0),
+            'size' => (int)array_get($this->query, 'size', 50)
         ];
 
         if ($body = array_get($this->query, 'body'))
@@ -45,7 +45,6 @@ class QueryBuilder
         {
             $build['sort'] = $sort;
         }
-
         return $build;
     }
 
@@ -87,11 +86,21 @@ class QueryBuilder
         return $this;
     }
 
-    public function matchSubString($field, $value)
+    public function matchSubString($value, $field = null)
     {
-        $query = ['query_string' => ['default_field' => $field, "query" => '*' . $value . '*']];
+        $words = explode(' ', $value);
 
-        $this->merge($query, 'must');
+        foreach ($words as $word)
+        {
+            $query = ['query_string' => ["query" => addslashes($word) ]];
+
+            if ($field)
+            {
+                $query['query_string']['default_field'] = $field;
+            }
+
+            $this->merge($query, 'must');
+        }
 
         return $this;
     }
@@ -101,7 +110,7 @@ class QueryBuilder
         $query = [];
         foreach ($params as $field => $value)
         {
-            $query[] = ['term' => [$field => $value]];
+            $query[] = ['term' => [$field => addslashes($value)]];
         }
 
         $this->merge($query, 'should');
