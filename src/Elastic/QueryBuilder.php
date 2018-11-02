@@ -57,7 +57,7 @@ class QueryBuilder
 
     public function where($field, $value)
     {
-        $query = ['term' => [$field => $value]];
+        $query = ['term' => [$field => $this->escapeSpecialChars($value)]];
 
         $this->merge($query);
 
@@ -92,7 +92,7 @@ class QueryBuilder
 
         foreach ($words as $word)
         {
-            $query = ['query_string' => ["query" => addslashes($word) ]];
+            $query = ['query_string' => ["query" => $this->escapeSpecialChars($word)]];
 
             if ($field)
             {
@@ -110,9 +110,22 @@ class QueryBuilder
         $query = [];
         foreach ($params as $field => $value)
         {
-            $query[] = ['term' => [$field => addslashes($value)]];
+            $query[] = ['term' => [$field => $this->escapeSpecialChars($value)]];
         }
 
         $this->merge($query, 'should');
+    }
+
+    protected function escapeSpecialChars($str)
+    {
+        // List of all special chars.
+        $special_chars = ['\\', '+', '-', '&&', '||', '!', '(', ')', '{', '}', '[', ']', '^', '"', '~', '*', '?', ':'];
+        // Escape all special characters.
+        foreach ($special_chars as $ch)
+        {
+            $str = str_replace($ch, "\\{$ch}", $str);
+        }
+
+        return $str;
     }
 }
