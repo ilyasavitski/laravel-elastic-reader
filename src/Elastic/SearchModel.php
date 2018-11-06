@@ -8,15 +8,14 @@ use Illuminate\Container\Container;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
 
-class SearchModel
+abstract class SearchModel
 {
     public static $dateTimeFormat= 'd/M/Y:H:i:s O';
 
-    protected static $index;
-    protected static $type;
-
     protected $queryBuilder;
     protected $callbacks;
+
+    abstract protected static function getIndex();
 
     public static function search(QueryBuilder $builder = null, array $callbacks = null)
     {
@@ -26,8 +25,7 @@ class SearchModel
 
         $parameters = array_merge(
             [
-                'index' => static::$index,
-                'type'  => static::$type,
+                'index' => static::getIndex(),
             ],
             $builderParameters
         );
@@ -147,8 +145,7 @@ class SearchModel
     public static function create($params)
     {
         $createParams = [
-            'index' => static::$index,
-            'type'  => static::$type,
+            'index' => static::getIndex(),
             'body'  => $params
         ];
 
@@ -161,8 +158,7 @@ class SearchModel
 
         $hit = app(Elastic::class)->get(
             [
-                'index' => static::$index,
-                'type'  => static::$type,
+                'index' => static::getIndex(),
                 'id'    => $response['_id']
             ]);
 
