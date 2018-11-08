@@ -146,6 +146,7 @@ abstract class SearchModel
     {
         $createParams = [
             'index' => static::getIndex(),
+            'type' => '_doc',
             'body'  => $params
         ];
 
@@ -159,7 +160,8 @@ abstract class SearchModel
         $hit = app(Elastic::class)->get(
             [
                 'index' => static::getIndex(),
-                'id'    => $response['_id']
+                'id'    => $response['_id'],
+                'type' => '_doc',
             ]);
 
         return static::prepareHit($hit);
