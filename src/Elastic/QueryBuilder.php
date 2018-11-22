@@ -64,6 +64,22 @@ class QueryBuilder
         return $this;
     }
 
+    public function whereIn($field, array $values)
+    {
+        $values = array_map(
+            function ($value) {
+                return $this->escapeSpecialChars($value);
+            },
+            $values
+        );
+
+        $query = ['terms' => [$field => $values]];
+
+        $this->merge($query);
+
+        return $this;
+    }
+
     public function range($field, $start = null, $end = null)
     {
         $query = [];
