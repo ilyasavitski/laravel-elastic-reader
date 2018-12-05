@@ -29,6 +29,11 @@ class QueryBuilder
         return $this;
     }
 
+    public function orderBy($orderField, $orderDirection)
+    {
+        return $this->sort($orderField . ':' . $orderDirection);
+    }
+
     public function build()
     {
         $build = [
@@ -129,7 +134,7 @@ class QueryBuilder
             $query[] = ['term' => [$field => $this->escapeSpecialChars($value)]];
         }
 
-        $this->merge($query, 'should');
+        $this->merge(['bool' => ['should' => $query]]);
     }
 
     protected function escapeSpecialChars($str)
