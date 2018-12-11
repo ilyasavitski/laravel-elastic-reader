@@ -67,6 +67,8 @@ abstract class SearchModel
     {
         $this->query()
              ->sort($orderField . ':' . $orderDirection);
+
+        return $this;
     }
 
     public function paginate($perPage)
