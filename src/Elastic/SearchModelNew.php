@@ -14,7 +14,7 @@ class SearchModelNew
     protected $callbacks;
     protected $hitCallback;
 
-    public function __construct($index, callable $hitCallback = null)
+    public function __construct($index, callable $hitCallback = null, $callbacks = null)
     {
         $this->index = $index;
         $this->hitCallback = $hitCallback ?: $this->getDefaultHitCallback();
@@ -82,6 +82,15 @@ class SearchModelNew
              ->sort($orderField . ':' . $orderDirection);
 
         return $this;
+    }
+
+    public function getTotal()
+    {
+        $this->query()
+             ->size(1);
+
+        return $this->get()
+                    ->getTotal();
     }
 
     public function paginate($perPage)
