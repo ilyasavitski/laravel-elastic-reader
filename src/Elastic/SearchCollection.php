@@ -29,23 +29,25 @@ class SearchCollection extends Collection
             );
         }
 
+        $items = (new static($items))
+            ->setTook($elasticResponse['took'])
+            ->setTimedOut($elasticResponse['timed_out'])
+            ->setTotal($elasticResponse['hits']['total'])
+            ->setMaxScore($elasticResponse['hits']['max_score'])
+            ->setShards($elasticResponse['_shards']);
+
         if ($callbacks)
         {
             foreach ($callbacks as $callback)
             {
                 if (is_callable($callback))
                 {
-                    $items = $callback($items);
+                    $callback($items);
                 }
             }
         }
 
-        return (new static($items))
-            ->setTook($elasticResponse['took'])
-            ->setTimedOut($elasticResponse['timed_out'])
-            ->setTotal($elasticResponse['hits']['total'])
-            ->setMaxScore($elasticResponse['hits']['max_score'])
-            ->setShards($elasticResponse['_shards']);
+        return $items;
     }
 
     public function setTook(int $took)
