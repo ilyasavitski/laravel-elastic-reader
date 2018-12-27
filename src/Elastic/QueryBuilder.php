@@ -62,7 +62,7 @@ class QueryBuilder
 
     public function where($field, $value)
     {
-        $query = ['term' => [$field => $this->escapeSpecialChars($value)]];
+        $query = ['term' => [$field => $value]];
 
         $this->merge($query);
 
@@ -71,13 +71,6 @@ class QueryBuilder
 
     public function whereIn($field, array $values)
     {
-        $values = array_map(
-            function ($value) {
-                return $this->escapeSpecialChars($value);
-            },
-            $values
-        );
-
         $query = ['terms' => [$field => $values]];
 
         $this->merge($query);
@@ -131,7 +124,7 @@ class QueryBuilder
         $query = [];
         foreach ($params as $field => $value)
         {
-            $query[] = ['term' => [$field => $this->escapeSpecialChars($value)]];
+            $query[] = ['term' => [$field => $value]];
         }
 
         $this->merge(['bool' => ['should' => $query]]);
