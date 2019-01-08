@@ -7,6 +7,7 @@ namespace Merkeleon\ElasticReader\Elastic;
 use Illuminate\Container\Container;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
+use Merkeleon\ElasticReader\Events\BeforeSearchInElasticSearchEvent;
 
 class SearchModelNew
 {
@@ -43,6 +44,7 @@ class SearchModelNew
             $builderParameters
         );
 
+        event(new BeforeSearchInElasticSearchEvent($parameters));
         $elasticResponse = $elastic->search($parameters);
 
         return SearchCollection::createFromElasticResponse($elasticResponse, $this->hitCallback, $callbacks);
