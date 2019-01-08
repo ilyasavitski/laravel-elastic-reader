@@ -21,6 +21,8 @@ class ElasticReaderServiceProvider extends ServiceProvider
             dirname(__DIR__) . '/config/elastic_search.php', 'elastic_search'
         );
 
+        $this->app->register(EventServiceProvider::class);
+
         $this->app->bind(Elastic::class, function ($app) {
             return new Elastic(
                 ClientBuilder::create()
