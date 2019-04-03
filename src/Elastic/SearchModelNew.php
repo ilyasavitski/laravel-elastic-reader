@@ -6,8 +6,8 @@ namespace Merkeleon\ElasticReader\Elastic;
 
 use Illuminate\Container\Container;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Pagination\Paginator;
 use Merkeleon\ElasticReader\Events\BeforeSearchInElasticSearchEvent;
+
 
 class SearchModelNew
 {
@@ -17,20 +17,24 @@ class SearchModelNew
 
     public function __construct($index, callable $hitCallback = null, $callbacks = null)
     {
-        $this->index = $index;
+        $this->index       = $index;
         $this->hitCallback = $hitCallback ?: $this->getDefaultHitCallback();
     }
 
     protected function getDefaultHitCallback()
     {
-        $defaultCallback =  function ($hit)
-        {
+        $defaultCallback = function ($hit) {
             return $hit;
         };
 
         return $defaultCallback;
     }
 
+    /**
+     * @param QueryBuilder|null $builder
+     * @param array|null $callbacks
+     * @return SearchCollection
+     */
     public function search(QueryBuilder $builder = null, array $callbacks = null)
     {
         $elastic = app(Elastic::class);
@@ -43,7 +47,6 @@ class SearchModelNew
             ],
             $builderParameters
         );
-
         event(new BeforeSearchInElasticSearchEvent($parameters));
         $elasticResponse = $elastic->search($parameters);
 
@@ -64,6 +67,9 @@ class SearchModelNew
         return $this->queryBuilder;
     }
 
+    /**
+     * @return SearchCollection
+     */
     public function get()
     {
         return $this->search($this->query(), $this->callbacks);
@@ -97,29 +103,29 @@ class SearchModelNew
 
     public function paginate($perPage)
     {
-        $page = Paginator::resolveCurrentPage();
+        /** @var Paginator $paginator */
+        $paginator = resolve(Paginator::class);
 
-        $offSet = max(0, ($page - 1) * $perPage);
+        try
+        {
+            $results = $paginator->paginate($this, $perPage);
+        }
+        catch (PaginatorException $exception)
+        {
+            return $paginator->getEmtyPaginator();
+        }
 
-        $this->query()
-             ->from($offSet)
-             ->size($perPage);
-
-        $results = $this->get();
-
-        return $this->paginator($results, $results->getTotal(), $perPage, $page, [
-            'path'     => Paginator::resolveCurrentPath(),
-            'pageName' => 'page',
-        ]);
+        return $results;
     }
 
     public function chunkById($count, callable $callback)
     {
-        $offset = 0;
+        $searchAfter = null;
         do
         {
             $this->query()
-                 ->from($offset)
+                 ->from(0)
+                 ->searchAfter($searchAfter)
                  ->size($count);
 
             $results = $this->get();
@@ -136,9 +142,9 @@ class SearchModelNew
                 return false;
             }
 
-            unset($results);
+            $searchAfter = $results->getLastSort();
 
-            $offset += $count;
+            unset($results);
 
         } while ($countResults == $count);
 
@@ -167,7 +173,7 @@ class SearchModelNew
     {
         $createParams = [
             'index' => $this->index,
-            'type' => '_doc',
+            'type'  => '_doc',
             'body'  => $params
         ];
 
@@ -182,7 +188,7 @@ class SearchModelNew
             [
                 'index' => $this->index,
                 'id'    => $response['_id'],
-                'type' => '_doc',
+                'type'  => '_doc',
             ]);
 
         $method = $this->hitCallback;
@@ -195,5 +201,10 @@ class SearchModelNew
         $this->callbacks[] = $callback;
 
         return $this;
+    }
+
+    public function __clone()
+    {
+        $this->queryBuilder = clone $this->queryBuilder;
     }
 }

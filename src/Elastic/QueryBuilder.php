@@ -22,9 +22,19 @@ class QueryBuilder
         return $this;
     }
 
+    public function searchAfter($searchAfter)
+    {
+        if ($searchAfter)
+        {
+            $this->query['body']['search_after'] = $searchAfter;
+        }
+
+        return $this;
+    }
+
     public function sort($sort)
     {
-        $this->query['sort'] = $sort;
+        $this->query['sort'] = [$sort, '_uid:asc'];
 
         return $this;
     }
@@ -32,6 +42,35 @@ class QueryBuilder
     public function orderBy($orderField, $orderDirection)
     {
         return $this->sort($orderField . ':' . $orderDirection);
+    }
+
+    public function reversSort()
+    {
+        if (empty($this->query['sort']))
+        {
+            return $this;
+        }
+
+        $resultSort = [];
+
+        foreach ($this->query['sort'] as $sort)
+        {
+            $sortArray = explode(':', $sort);
+            if (!empty($sortArray[1] && $sortArray[1] == 'desc'))
+            {
+                $direction = 'asc';
+            }
+            else
+            {
+                $direction = 'desc';
+            }
+
+            $resultSort[] = $sortArray[0] . ':' . $direction;
+        }
+
+        $this->query['sort'] = $resultSort;
+
+        return $this;
     }
 
     public function build()
@@ -50,6 +89,12 @@ class QueryBuilder
         {
             $build['sort'] = $sort;
         }
+
+        if ($searchAfter = array_get($this->query, 'search_after'))
+        {
+            $build['search_after'] = $searchAfter;
+        }
+
         return $build;
     }
 
