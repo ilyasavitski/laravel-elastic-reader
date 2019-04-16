@@ -12,6 +12,8 @@ class SearchCollection extends Collection
     protected $total;
     protected $maxScore;
     protected $shards;
+    protected $lastSort;
+
 
     public static function createFromElasticResponse($elasticResponse = [], callable $callbackHit = null, array $callbacks = null)
     {
@@ -34,7 +36,8 @@ class SearchCollection extends Collection
             ->setTimedOut($elasticResponse['timed_out'])
             ->setTotal($elasticResponse['hits']['total'])
             ->setMaxScore($elasticResponse['hits']['max_score'])
-            ->setShards($elasticResponse['_shards']);
+            ->setShards($elasticResponse['_shards'])
+            ->setLastSort(static::getLastSortFromHits($elasticResponse['hits']['hits']));
 
         if ($callbacks)
         {
@@ -113,10 +116,6 @@ class SearchCollection extends Collection
         return $this->maxScore;
     }
 
-    /**
-     * @return array
-     */
-
     public function setShards(array $shards)
     {
         $this->shards = $shards;
@@ -127,5 +126,28 @@ class SearchCollection extends Collection
     public function getShards()
     {
         return $this->shards;
+    }
+
+    protected static function getLastSortFromHits($hits)
+    {
+        if (empty($hits))
+        {
+            return null;
+        }
+        $lastHit = last($hits);
+
+        return array_get($lastHit, 'sort');
+    }
+
+    public function setLastSort($lastSort)
+    {
+        $this->lastSort = $lastSort;
+
+        return $this;
+    }
+
+    public function getLastSort()
+    {
+        return $this->lastSort;
     }
 }
