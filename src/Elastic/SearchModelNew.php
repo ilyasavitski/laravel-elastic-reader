@@ -184,16 +184,7 @@ class SearchModelNew
             throw new \Exception('Can not create Elastic Model ');
         }
 
-        $hit = app(Elastic::class)->get(
-            [
-                'index' => $this->index,
-                'id'    => $response['_id'],
-                'type'  => '_doc',
-            ]);
-
-        $method = $this->hitCallback;
-
-        return $method($hit);
+        return $response['_id'];
     }
 
     public function addCallback(callable $callback)
