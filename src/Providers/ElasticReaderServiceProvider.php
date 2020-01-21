@@ -5,6 +5,8 @@ namespace Merkeleon\ElasticReader\Providers;
 use Elasticsearch\ClientBuilder;
 use Illuminate\Support\ServiceProvider;
 use Merkeleon\ElasticReader\Elastic\Elastic;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
 
 class ElasticReaderServiceProvider extends ServiceProvider
 {
@@ -24,10 +26,13 @@ class ElasticReaderServiceProvider extends ServiceProvider
         $this->app->register(EventServiceProvider::class);
 
         $this->app->bind(Elastic::class, function ($app) {
+            $logger = new Logger('log');
+            $logger->pushHandler(new StreamHandler(config('elastic_search.logPath'), Logger::WARNING));
+
             return new Elastic(
                 ClientBuilder::create()
                              ->setHosts(config('elastic_search.hosts'))
-                             ->setLogger(ClientBuilder::defaultLogger(config('elastic_search.logPath')))
+                             ->setLogger($logger)
                              ->build()
             );
         });
