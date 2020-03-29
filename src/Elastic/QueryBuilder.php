@@ -7,6 +7,12 @@ namespace Merkeleon\ElasticReader\Elastic;
 class QueryBuilder
 {
     protected $query = [];
+    protected $defaultSorting = [];
+
+    public function setDefaultSorting(array $defaultSorting)
+    {
+        $this->defaultSorting = $defaultSorting;
+    }
 
     public function from(int $from)
     {
@@ -34,7 +40,7 @@ class QueryBuilder
 
     public function sort($sort)
     {
-        $this->query['sort'] = [$sort, '_uid:asc'];
+        $this->query['sort'] = array_merge([$sort],  $this->defaultSorting);
 
         return $this;
     }
