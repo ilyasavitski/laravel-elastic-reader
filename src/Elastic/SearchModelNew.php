@@ -14,8 +14,9 @@ class SearchModelNew
     protected $queryBuilder;
     protected $callbacks;
     protected $hitCallback;
+    protected $defaultSorting = [];
 
-    public function __construct($index, callable $hitCallback = null, $callbacks = null)
+    public function __construct($index, callable $hitCallback = null)
     {
         $this->index       = $index;
         $this->hitCallback = $hitCallback ?: $this->getDefaultHitCallback();
@@ -62,6 +63,7 @@ class SearchModelNew
         elseif (!$this->queryBuilder)
         {
             $this->queryBuilder = new QueryBuilder();
+            $this->queryBuilder->setDefaultSorting($this->defaultSorting);
         }
 
         return $this->queryBuilder;
@@ -190,6 +192,13 @@ class SearchModelNew
     public function addCallback(callable $callback)
     {
         $this->callbacks[] = $callback;
+
+        return $this;
+    }
+
+    public function setDefaultSorting(array $defaultSorting)
+    {
+        $this->defaultSorting = $defaultSorting;
 
         return $this;
     }
