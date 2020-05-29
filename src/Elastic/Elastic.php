@@ -25,6 +25,11 @@ class Elastic
         return $this->client->index($parameters);
     }
 
+    public function bulk(array $parameters)
+    {
+        return $this->client->bulk($parameters);
+    }
+
     /**
      * Delete a single item
      *

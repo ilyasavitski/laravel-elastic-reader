@@ -189,6 +189,36 @@ class SearchModelNew
         return $response['_id'];
     }
 
+    public function bulkCreate(array $params)
+    {
+        $i = 0;
+        foreach ($params as $logData)
+        {
+            $createParams['body'][] = [
+                'index' => [
+                    '_index' => $this->index,
+                    '_type'  => '_doc',
+                ]
+            ];
+
+            $createParams['body'][] = $logData;
+
+            $i++;
+
+            if ($i % 1000 == 0)
+            {
+                app(Elastic::class)->bulk($createParams);
+
+                $createParams = ['body' => []];
+            }
+        }
+
+        if (!empty($createParams['body']))
+        {
+            app(Elastic::class)->bulk($createParams);
+        }
+    }
+
     public function addCallback(callable $callback)
     {
         $this->callbacks[] = $callback;
