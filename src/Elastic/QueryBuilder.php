@@ -120,6 +120,13 @@ class QueryBuilder
         return $this;
     }
 
+    public function whereRaw($query)
+    {
+        $this->query['body']['query']['query_string']['query'] = $query;
+
+        return $this;
+    }
+
     public function whereIn($field, array $values)
     {
         $query = ['terms' => [$field => $values]];
