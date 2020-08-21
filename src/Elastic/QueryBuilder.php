@@ -83,21 +83,21 @@ class QueryBuilder
     public function build()
     {
         $build = [
-            'from' => (int)Arr::getet($this->query, 'from', 0),
-            'size' => (int)Arr::getet($this->query, 'size', 50)
+            'from' => (int)Arr::get($this->query, 'from', 0),
+            'size' => (int)Arr::get($this->query, 'size', 50)
         ];
 
-        if ($body = Arr::getet($this->query, 'body'))
+        if ($body = Arr::get($this->query, 'body'))
         {
             $build['body'] = $body;
         }
 
-        if ($sort = Arr::getet($this->query, 'sort'))
+        if ($sort = Arr::get($this->query, 'sort'))
         {
             $build['sort'] = $sort;
         }
 
-        if ($searchAfter = Arr::getet($this->query, 'search_after'))
+        if ($searchAfter = Arr::get($this->query, 'search_after'))
         {
             $build['search_after'] = $searchAfter;
         }

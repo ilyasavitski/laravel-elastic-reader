@@ -137,7 +137,7 @@ class SearchCollection extends Collection
         }
         $lastHit = last($hits);
 
-        return Arr::getet($lastHit, 'sort');
+        return Arr::get($lastHit, 'sort');
     }
 
     public function setLastSort($lastSort)
