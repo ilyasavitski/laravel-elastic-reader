@@ -4,6 +4,7 @@
 namespace Merkeleon\ElasticReader\Elastic;
 
 use Illuminate\Support\Collection;
+use Illuminate\Support\Arr;
 
 class SearchCollection extends Collection
 {
@@ -136,7 +137,7 @@ class SearchCollection extends Collection
         }
         $lastHit = last($hits);
 
-        return array_get($lastHit, 'sort');
+        return Arr::getet($lastHit, 'sort');
     }
 
     public function setLastSort($lastSort)
