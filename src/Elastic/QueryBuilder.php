@@ -10,6 +10,13 @@ class QueryBuilder
     protected $query = [];
     protected $defaultSorting = [];
 
+    const EQUAL_SIGNS = [
+        '>'  => 'gt',
+        '>=' => 'gte',
+        '<'  => 'lt',
+        '<=' => 'lte',
+    ];
+
     public function setDefaultSorting(array $defaultSorting)
     {
         $this->defaultSorting = $defaultSorting;
@@ -200,5 +207,31 @@ class QueryBuilder
         }
 
         return $str;
+    }
+
+    public function when($value, $callback, $default = null)
+    {
+        if ($value)
+        {
+            return $callback($this, $value) ?: $this;
+        }
+        elseif ($default)
+        {
+            return $default($this, $value) ?: $this;
+        }
+
+        return $this;
+    }
+
+    public function whereDate(string $field, string $sign, string $value = null)
+    {
+        if ($value && $equalSign = Arr::get(self::EQUAL_SIGNS, $sign))
+        {
+            $query['range'][$field][$equalSign] = $value;
+
+            $this->merge($query);
+        }
+
+        return $this;
     }
 }
